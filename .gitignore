@@ -1,8 +1,32 @@
+# Python
 __pycache__/
-*.pyc
+*.py[cod]
 *.egg-info/
+*.egg
+.eggs/
 dist/
 build/
-.eggs/
+*.whl
 *.spec
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+*.err
+
+# Environment / secrets
 .env
