@@ -40,7 +40,31 @@ voice-typing --hotkey right_shift       # Change the hold-to-talk key
 voice-typing --model small              # Use a different Whisper model
 voice-typing --language en              # Set language (default: auto-detect)
 voice-typing --typing-method simulate   # Type keys instead of pasting from clipboard
+voice-typing --romanize                 # Output Hindi in Roman script (Hinglish)
 voice-typing -v                         # Verbose/debug logging
+```
+
+### Hindi Romanization
+
+Use `--romanize` to get Hindi speech typed in Roman script instead of Devanagari:
+
+```
+Speak: "तुम क्या कर रही हो"
+Without --romanize: तुम क्या कर रही हो
+With --romanize:    tum kya kar rahi ho
+```
+
+```bash
+voice-typing --romanize                 # Auto-detect language, romanize Hindi
+voice-typing --romanize --language hi   # Force Hindi for best results
+```
+
+English speech passes through unchanged, so you can leave `--romanize` on and speak in either language.
+
+To enable permanently, add to `~/.voice_typing/config.json`:
+
+```json
+{ "romanize": true }
 ```
 
 ### Available Whisper models
