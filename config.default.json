@@ -9,5 +9,6 @@
   "audio_channels": 1,
   "vad_filter": true,
   "beam_size": 5,
-  "overlay_enabled": true
+  "overlay_enabled": true,
+  "romanize": false
 }

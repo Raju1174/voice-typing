@@ -27,6 +27,7 @@ class Config:
     vad_filter: bool = True
     beam_size: int = 5
     overlay_enabled: bool = True
+    romanize: bool = False
 
     def save(self) -> None:
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)

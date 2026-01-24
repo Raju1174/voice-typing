@@ -36,6 +36,10 @@ def main() -> None:
         help="Disable the recording indicator overlay",
     )
     parser.add_argument(
+        "--romanize", action="store_true",
+        help="Transliterate Hindi (Devanagari) output to Roman script (Hinglish)",
+    )
+    parser.add_argument(
         "-v", "--verbose", action="store_true",
         help="Enable debug logging",
     )
@@ -60,6 +64,8 @@ def main() -> None:
         config.typing_method = args.typing_method
     if args.no_overlay:
         config.overlay_enabled = False
+    if args.romanize:
+        config.romanize = True
 
     app = VoiceTypingApp(config)
     try:

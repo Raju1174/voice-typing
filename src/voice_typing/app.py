@@ -10,6 +10,7 @@ from voice_typing.config import Config
 from voice_typing.audio import AudioRecorder
 from voice_typing.transcriber import Transcriber
 from voice_typing.typer import type_text
+from voice_typing.romanizer import romanize
 from voice_typing.hotkey import HotkeyListener
 from voice_typing.tray import TrayIcon, TrayState
 from voice_typing.overlay import Overlay
@@ -121,6 +122,8 @@ class VoiceTypingApp:
                 beam_size=self.config.beam_size,
                 vad_filter=self.config.vad_filter,
             )
+            if text and self.config.romanize:
+                text = romanize(text)
             if text:
                 type_text(text, method=self.config.typing_method)
         except Exception:
