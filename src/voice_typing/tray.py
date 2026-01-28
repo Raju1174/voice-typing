@@ -52,19 +52,19 @@ class TrayIcon:
         self._state = state
         if self._icon is not None:
             self._icon.icon = _make_icon(state)
-            self._icon.title = f"Voice Typing — {state.value}"
+            self._icon.title = f"VoxType — {state.value}"
 
     def run(self, setup_callback: Callable[["TrayIcon"], None]) -> None:
         """Create and run the tray icon. Blocks on the main thread (required by macOS)."""
         menu = pystray.Menu(
-            pystray.MenuItem("Voice Typing", None, enabled=False),
+            pystray.MenuItem("VoxType", None, enabled=False),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem("Quit", lambda: self._on_quit()),
         )
         self._icon = pystray.Icon(
-            name="voice_typing",
+            name="voxtype",
             icon=_make_icon(self._state),
-            title="Voice Typing — idle",
+            title="VoxType — idle",
             menu=menu,
         )
 

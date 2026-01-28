@@ -12,12 +12,12 @@ from voice_typing.app import VoiceTypingApp
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        prog="voice-typing",
-        description="Hold a key, speak, text appears — offline voice typing",
+        prog="voxtype",
+        description="VoxType — Hold a key, speak, text appears. Offline voice typing.",
     )
     parser.add_argument(
         "--model", default=None,
-        help="Whisper model size (tiny/base/small/medium/large-v3)",
+        help="Whisper model size (tiny/base/small/medium/large-v3/large-v3-turbo/distil-large-v3)",
     )
     parser.add_argument(
         "--hotkey", default=None,
@@ -34,6 +34,10 @@ def main() -> None:
     parser.add_argument(
         "--no-overlay", action="store_true",
         help="Disable the recording indicator overlay",
+    )
+    parser.add_argument(
+        "--quantization", choices=["4bit", "8bit"], default=None,
+        help="Quantization for lightning-whisper-mlx (4bit or 8bit)",
     )
     parser.add_argument(
         "--romanize", action="store_true",
@@ -64,6 +68,8 @@ def main() -> None:
         config.typing_method = args.typing_method
     if args.no_overlay:
         config.overlay_enabled = False
+    if args.quantization:
+        config.quantization = args.quantization
     if args.romanize:
         config.romanize = True
 

@@ -1,3 +1,4 @@
+# ─── Core dependencies ────────────────────────────────────────────────
 faster-whisper>=1.0.0
 sounddevice>=0.4.6
 numpy>=1.24
@@ -5,4 +6,25 @@ pynput>=1.7.6
 pystray>=0.19
 Pillow>=10.0
 pyperclip>=1.8
-pyinstaller>=6.0
+
+# ─── macOS only — GPU-accelerated Whisper on Apple Silicon ────────────
+# Backend priority: lightning-whisper-mlx > mlx-whisper > faster-whisper (CPU)
+mlx-whisper>=0.4
+lightning-whisper-mlx>=0.0.10
+pyobjc-framework-Cocoa>=10.0
+
+# ─── Silero VAD — trim silence before transcription ───────────────────
+# Requires PyTorch as a dependency (installed automatically)
+silero-vad>=5.1
+
+# ─── Build tools (optional — only needed to create standalone .app/.exe) ─
+# pyinstaller>=6.0
+
+# ─── Hindi Romanization ──────────────────────────────────────────────
+# Built-in — no extra dependencies needed.
+# Enable with: "romanize": true in ~/.voice_typing/config.json
+# Includes 1800+ word Hinglish dictionary covering:
+#   everyday Hindi, greetings, emotions, food, family, body parts,
+#   weather, travel, finance, technology, politics, law, military,
+#   psychology, sports, space/astronomy, archaeology, construction,
+#   fashion, music, gaming, medical/health, cooking, and more.

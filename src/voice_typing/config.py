@@ -10,7 +10,7 @@ from typing import Optional
 
 log = logging.getLogger(__name__)
 
-CONFIG_DIR = Path.home() / ".voice_typing"
+CONFIG_DIR = Path.home() / ".voxtype"
 CONFIG_FILE = CONFIG_DIR / "config.json"
 
 
@@ -20,6 +20,7 @@ class Config:
     whisper_model: str = "base"
     whisper_device: str = "auto"
     whisper_compute_type: str = "int8"
+    quantization: Optional[str] = None  # None, "4bit", "8bit" (lightning-whisper-mlx only)
     language: Optional[str] = None
     typing_method: str = "clipboard"  # "clipboard" or "simulate"
     audio_sample_rate: int = 16000
@@ -28,6 +29,7 @@ class Config:
     beam_size: int = 5
     overlay_enabled: bool = True
     romanize: bool = False
+    initial_prompt: Optional[str] = None
 
     def save(self) -> None:
         CONFIG_DIR.mkdir(parents=True, exist_ok=True)

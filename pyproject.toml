@@ -3,9 +3,9 @@ requires = ["setuptools>=68.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "voice-typing"
+name = "voxtype"
 version = "0.1.0"
-description = "Cross-platform voice typing app — hold a key, speak, text appears"
+description = "VoxType — Cross-platform offline voice typing. Hold a key, speak, text appears."
 requires-python = ">=3.10"
 dependencies = [
     "faster-whisper>=1.0.0",
@@ -17,7 +17,12 @@ dependencies = [
     "pyperclip>=1.8",
 ]
 
+[project.optional-dependencies]
+macos = ["mlx-whisper>=0.4", "lightning-whisper-mlx>=0.0.10", "pyobjc-framework-Cocoa>=10.0"]
+vad = ["silero-vad>=5.1"]
+
 [project.scripts]
+voxtype = "voice_typing.__main__:main"
 voice-typing = "voice_typing.__main__:main"
 
 [tool.setuptools.packages.find]

@@ -10,7 +10,7 @@ from voice_typing.config import Config
 from voice_typing.audio import AudioRecorder
 from voice_typing.transcriber import Transcriber
 from voice_typing.typer import type_text
-from voice_typing.romanizer import romanize
+from voice_typing.romanizer import romanize, format_text
 from voice_typing.hotkey import HotkeyListener
 from voice_typing.tray import TrayIcon, TrayState
 from voice_typing.overlay import Overlay
@@ -20,15 +20,22 @@ log = logging.getLogger(__name__)
 
 
 def _can_use_overlay() -> bool:
-    """Check if the tkinter overlay can work.
+    """Check if an overlay can work on this platform.
 
-    On macOS, tkinter requires the main thread, but pystray already occupies it,
-    so the overlay cannot be used alongside the tray icon.
+    On macOS, we use a PyObjC NSPanel overlay instead of tkinter (which would
+    conflict with pystray for the main thread). On other platforms, tkinter is used.
     """
     from voice_typing.platform_utils import IS_MAC
     if IS_MAC:
-        log.info("Overlay disabled on macOS (tkinter requires main thread, used by tray)")
-        return False
+        try:
+            from voice_typing.overlay_macos import HAS_PYOBJC
+            if HAS_PYOBJC:
+                return True
+            log.warning("PyObjC not available, macOS overlay disabled")
+            return False
+        except ImportError:
+            log.warning("overlay_macos module not found, overlay disabled")
+            return False
     try:
         import tkinter  # noqa: F401
         return True
@@ -61,6 +68,7 @@ class VoiceTypingApp:
             model_size=config.whisper_model,
             device=device,
             compute_type=config.whisper_compute_type,
+            quantization=config.quantization,
         )
         self.hotkey = HotkeyListener(
             key_name=config.hotkey,
@@ -70,7 +78,12 @@ class VoiceTypingApp:
         self.tray = TrayIcon(on_quit=self.quit)
         self.overlay: Overlay | None = None
         if config.overlay_enabled and _can_use_overlay():
-            self.overlay = Overlay()
+            from voice_typing.platform_utils import IS_MAC
+            if IS_MAC:
+                from voice_typing.overlay_macos import MacOverlay
+                self.overlay = MacOverlay()
+            else:
+                self.overlay = Overlay()
 
     def run(self) -> None:
         """Start the app. Blocks on the tray icon loop (main thread)."""
@@ -87,7 +100,7 @@ class VoiceTypingApp:
         self.hotkey.start()
         if self.overlay is not None:
             self.overlay.start()
-        log.info("Voice Typing is running. Hold '%s' to record.", self.config.hotkey)
+        log.info("VoxType is running. Hold '%s' to record.", self.config.hotkey)
 
     def _on_hotkey_press(self) -> None:
         with self._lock:
@@ -116,15 +129,40 @@ class VoiceTypingApp:
 
     def _process(self, audio) -> None:
         try:
-            text = self.transcriber.transcribe(
-                audio,
+            from voice_typing.vad import trim_silence
+            trimmed = trim_silence(audio, sample_rate=self.config.audio_sample_rate)
+            if trimmed is None:
+                log.info("No speech detected, skipping transcription")
+                return  # finally block still resets state to IDLE
+            # If VAD trimmed successfully, disable faster-whisper's internal VAD
+            # to avoid double processing. If trim_silence returned audio unchanged
+            # (silero not installed), keep the config's vad_filter as fallback.
+            silero_active = trimmed is not audio
+            text, detected_lang = self.transcriber.transcribe(
+                trimmed,
                 language=self.config.language,
                 beam_size=self.config.beam_size,
-                vad_filter=self.config.vad_filter,
+                vad_filter=False if silero_active else self.config.vad_filter,
+                initial_prompt=self.config.initial_prompt,
             )
-            if text and self.config.romanize:
+            # When romanize is on and Whisper detected Urdu instead of Hindi,
+            # re-transcribe with language="hi" forced so we get Devanagari
+            # (which has explicit vowels) instead of Urdu script (which drops
+            # short vowels and can't be romanized accurately).
+            if (text and self.config.romanize and detected_lang == "ur"
+                    and self.config.language is None):
+                log.info("Detected Urdu, re-transcribing as Hindi for romanization")
+                text, detected_lang = self.transcriber.transcribe(
+                    trimmed,
+                    language="hi",
+                    beam_size=self.config.beam_size,
+                    vad_filter=False if silero_active else self.config.vad_filter,
+                    initial_prompt=self.config.initial_prompt,
+                )
+            if text and self.config.romanize and detected_lang in ("hi", "ur"):
                 text = romanize(text)
             if text:
+                text = format_text(text)
                 type_text(text, method=self.config.typing_method)
         except Exception:
             log.exception("Transcription/typing failed")

@@ -28,5 +28,14 @@ Thumbs.db
 *.log
 *.err
 
+# Models (large binary files)
+mlx_models/
+
+# PDF generation script (temp)
+generate_pdf.py
+
+# Old PDF name
+Voice_Typing_Setup_Guide.pdf
+
 # Environment / secrets
 .env
